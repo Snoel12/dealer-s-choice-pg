@@ -14,22 +14,29 @@ const setUP = async () => {
 };
 setUP();
 app.get("/", async (req, res, next) => {
-  const data = client.query("SELECT * FROM ");
+  const data = (await client.query("SELECT * FROM villains")).rows;
+  console.log(data);
   res.send(` <!DOCTYPE html>
   <html>
   <head>
+  
       <title> The Villains </title>
-      <link rel = "stylesheet" type= 'text/css' href ='./style.css'/>
+      <link rel = stylesheet href = styles.css> 
   </head>
   <body>
   <nav>
   <a href= '/' > Home </a>
-  <a href ='/users'> Users </a>
+  
   </nav>
   <div>
   <h1 > The Villains </h1>
   <ul>
-    
+  ${data
+    .map(
+      (villain) =>
+        `<li> <a href = /villain/${villain.id}> ${villain.alias} </a>  </li>`
+    )
+    .join("")}
   </ul>
   </div>
   </body>
@@ -39,24 +46,43 @@ app.get("/", async (req, res, next) => {
   `);
 });
 
-app.get("/users/:id", (req, res) => {
+app.get("/villain/:id", async (req, res) => {
+  let pointer = req.params.id;
+  const data = (
+    await client.query(
+      "SELECT * FROM villains WHERE villains.id = $1",
+
+      [pointer]
+    )
+  ).rows[0];
+
   res.send(` <!DOCTYPE html>
   <html>
   <head>
+  <link rel = stylesheet href = styles.css>
       <title> The Villains </title>
-      <link rel = "stylesheet" type= 'text/css' href ='./style.css'/>
+      
   </head>
   <body>
   <nav>
   <a href= '/' > Home </a>
-  <a href ='/users'> Users </a>
+  
   </nav>
-  <div>
-  <h1 > The Villains </h1>
-  <ul>
-    
-  </ul>
-  </div>
+  <h1 id='h1'> ${data.alias} </h1>
+  <table id = 'sheet'> 
+  <tr>
+   <th> first name</th>
+   <th> last name</th>
+  </tr>
+  <th> ${data.name} </th>
+  <th> ${data.surname} </th>
+  <tr> 
+   
+  </tr>
+  
+
+  
+  </table>
   </body>
   
   </html>
